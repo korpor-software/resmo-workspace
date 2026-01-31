@@ -14,7 +14,7 @@ const { join } = require('path');
 
 // === CONFIGURATION ===
 const config = {
-  org: process.env.GIT_ORG || 'ahmedjaziri31',
+  org: process.env.GIT_ORG || 'korpor-software',
   https: false,
   repos: [
     { repo: 'resmo-admin', folder: 'admin' },

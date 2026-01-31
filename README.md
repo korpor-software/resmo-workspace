@@ -11,11 +11,11 @@ Monorepo workspace for the Resmo Real Estate Management Platform.
 
 ```bash
 # 1. Clone workspace
-git clone git@github.com:your-org/resmo-workspace.git Resmo
+git clone git@github.com:ahmedjaziri31/resmo-workspace.git Resmo
 cd Resmo
 
 # 2. Run setup (auto-detects OS)
-node setup.js --org your-org
+node setup.js
 
 # 3. Configure secrets
 # Edit .env with your values
@@ -27,13 +27,13 @@ bun run dev
 ### Setup Options
 
 ```bash
-node setup.js --org your-org          # SSH (default)
-node setup.js --org your-org --https  # HTTPS
+node setup.js              # SSH (default)
+node setup.js --https      # HTTPS
 ```
 
 Or use platform-specific scripts:
-- **Windows:** `.\setup.ps1 -GitOrg "your-org"`
-- **Mac/Linux:** `./setup.sh --org your-org`
+- **Windows:** `.\setup.ps1`
+- **Mac/Linux:** `./setup.sh`
 
 ## Project Structure
 

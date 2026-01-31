@@ -8,7 +8,7 @@
 set -e
 
 # === CONFIGURATION ===
-GIT_ORG="${GIT_ORG:-ahmedjaziri31}"
+GIT_ORG="${GIT_ORG:-korpor-software}"
 USE_HTTPS=false
 
 # Parse arguments

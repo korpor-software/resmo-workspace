@@ -11,10 +11,10 @@ Monorepo workspace for the Resmo Real Estate Management Platform.
 
 ```bash
 # 1. Clone workspace
-git clone git@github.com:ahmedjaziri31/resmo-workspace.git Resmo
+git clone git@github.com:korpor-software/resmo-workspace.git Resmo
 cd Resmo
 
-# 2. Run setup (auto-detects OS)
+# 2. Run setup
 node setup.js
 
 # 3. Configure secrets

@@ -5,7 +5,7 @@
 #   -UseHTTPS      Use HTTPS instead of SSH
 
 param(
-    [string]$GitOrg = "your-org",
+    [string]$GitOrg = "ahmedjaziri31",
     [switch]$UseHTTPS
 )
 

@@ -1,140 +1,95 @@
-#!/bin/bash
-# ============================================
-# Resmo Workspace Setup Script (Mac/Linux)
-# ============================================
-# This script clones all app repositories into the apps/ folder
-# Run: chmod +x setup.sh && ./setup.sh
+#!/usr/bin/env bash
+# Resmo Workspace Setup - Clones all app repositories
+# Usage: ./setup.sh [OPTIONS]
+# Options:
+#   --https    Use HTTPS instead of SSH
+#   --org ORG  Set GitHub organization (default: your-org)
 
 set -e
 
-# Configuration - Change these to match your setup
-GIT_HOST="${GIT_HOST:-github.com}"
-GIT_ORG="${GIT_ORG:-your-org}"  # Change this to your GitHub organization/username
-USE_HTTPS="${USE_HTTPS:-false}"
+# === CONFIGURATION ===
+GIT_ORG="${GIT_ORG:-your-org}"
+USE_HTTPS=false
 
-# Repository configuration
-declare -A REPOS=(
-    ["resmo-admin"]="admin"
-    ["resmo-backend"]="backend"
-    ["resmo-company"]="company"
-    ["resmo-superadmin"]="superadmin"
-    ["resmo-conseiller"]="conseiller"
-)
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --https) USE_HTTPS=true; shift ;;
+        --org) GIT_ORG="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-NC='\033[0m' # No Color
+# === REPOSITORIES ===
+REPOS="resmo-admin:admin resmo-backend:backend resmo-company:company resmo-superadmin:superadmin resmo-conseiller:conseiller"
 
-# Helper functions
-step() { echo -e "\n${CYAN}>> $1${NC}"; }
-success() { echo -e "   ${GREEN}[OK]${NC} $1"; }
-warning() { echo -e "   ${YELLOW}[SKIP]${NC} $1"; }
-error() { echo -e "   ${RED}[ERROR]${NC} $1"; }
+# === COLORS ===
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
-# Get script directory
+log_ok() { echo -e "${GREEN}[OK]${NC} $1"; }
+log_skip() { echo -e "${YELLOW}[SKIP]${NC} $1"; }
+log_fail() { echo -e "${RED}[FAIL]${NC} $1"; }
+log_step() { echo -e "\n${CYAN}$1${NC}"; }
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APPS_DIR="$SCRIPT_DIR/apps"
 
-# Header
-echo ""
-echo -e "${MAGENTA}============================================${NC}"
-echo -e "${MAGENTA}       Resmo Workspace Setup${NC}"
-echo -e "${MAGENTA}============================================${NC}"
+echo -e "\n${CYAN}Resmo Workspace Setup${NC}\n"
 
-# Check prerequisites
-step "Checking prerequisites..."
+# === PREREQUISITES ===
+log_step "Checking prerequisites..."
 
-if ! command -v git &> /dev/null; then
-    error "Git is not installed. Please install Git first."
-    exit 1
-fi
-success "Git is installed"
+command -v git &>/dev/null && log_ok "Git installed" || { log_fail "Git not found - install from git-scm.com"; exit 1; }
+command -v bun &>/dev/null && log_ok "Bun installed" || log_skip "Bun not found - install from bun.sh"
 
-if ! command -v bun &> /dev/null; then
-    echo -e "   ${YELLOW}[WARN]${NC} Bun is not installed. Install from: https://bun.sh"
-else
-    success "Bun is installed"
-fi
+# === CLONE REPOS ===
+log_step "Cloning repositories..."
+mkdir -p "$APPS_DIR"
 
-# Create apps directory
-step "Creating apps directory..."
+CLONED=0; SKIPPED=0; FAILED=0
 
-if [ ! -d "$APPS_DIR" ]; then
-    mkdir -p "$APPS_DIR"
-    success "Created apps/ directory"
-else
-    success "apps/ directory already exists"
-fi
-
-# Clone repositories
-step "Cloning repositories..."
-
-for repo in "${!REPOS[@]}"; do
-    folder="${REPOS[$repo]}"
-    repo_path="$APPS_DIR/$folder"
+for entry in $REPOS; do
+    repo="${entry%%:*}"
+    folder="${entry##*:}"
+    path="$APPS_DIR/$folder"
     
-    if [ -d "$repo_path" ]; then
-        warning "$folder already exists, skipping..."
+    if [ -d "$path" ]; then
+        log_skip "$folder (exists)"
+        ((SKIPPED++))
         continue
     fi
     
-    # Build clone URL
-    if [ "$USE_HTTPS" = "true" ]; then
-        clone_url="https://$GIT_HOST/$GIT_ORG/$repo.git"
-    else
-        clone_url="git@$GIT_HOST:$GIT_ORG/$repo.git"
-    fi
+    [ "$USE_HTTPS" = true ] && url="https://github.com/$GIT_ORG/$repo.git" || url="git@github.com:$GIT_ORG/$repo.git"
     
-    echo -e "   Cloning $repo..."
-    
-    if git clone "$clone_url" "$repo_path" 2>/dev/null; then
-        success "Cloned $repo -> apps/$folder"
+    if git clone --quiet "$url" "$path" 2>/dev/null; then
+        log_ok "$folder"
+        ((CLONED++))
     else
-        error "Failed to clone $repo"
+        log_fail "$folder (no access or repo not found)"
+        ((FAILED++))
     fi
 done
 
-# Setup environment file
-step "Setting up environment..."
+# === ENVIRONMENT ===
+log_step "Setting up environment..."
 
-if [ ! -f "$SCRIPT_DIR/.env" ]; then
-    if [ -f "$SCRIPT_DIR/.env.example" ]; then
-        cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
-        success "Created .env from .env.example"
-        echo -e "   ${YELLOW}[ACTION]${NC} Edit .env and add your secrets!"
-    else
-        warning ".env.example not found, skipping .env creation"
-    fi
+if [ ! -f "$SCRIPT_DIR/.env" ] && [ -f "$SCRIPT_DIR/.env.example" ]; then
+    cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
+    log_ok "Created .env from template"
+    echo -e "    ${YELLOW}Edit .env with your secrets${NC}"
 else
-    success ".env already exists"
+    [ -f "$SCRIPT_DIR/.env" ] && log_ok ".env exists" || log_skip "No .env.example found"
 fi
 
-# Install dependencies
-step "Installing dependencies..."
-
-if command -v bun &> /dev/null; then
-    echo "   Running bun install..."
-    cd "$SCRIPT_DIR"
-    if bun install; then
-        success "Dependencies installed"
-    else
-        error "Failed to install dependencies"
-    fi
-else
-    warning "Bun not installed, skipping dependency installation"
+# === INSTALL ===
+if command -v bun &>/dev/null; then
+    log_step "Installing dependencies..."
+    cd "$SCRIPT_DIR" && bun install --silent && log_ok "Dependencies installed"
 fi
 
-# Done
-echo ""
-echo -e "${GREEN}============================================${NC}"
-echo -e "${GREEN}       Setup Complete!${NC}"
-echo -e "${GREEN}============================================${NC}"
-echo ""
-echo -e "${CYAN}Next steps:${NC}"
-echo "  1. Edit .env with your secrets"
-echo "  2. Run: bun run dev"
-echo ""
+# === SUMMARY ===
+echo -e "\n${CYAN}Summary:${NC} $CLONED cloned, $SKIPPED skipped, $FAILED failed"
+
+[ $FAILED -gt 0 ] && echo -e "${YELLOW}Some repos failed - check access permissions${NC}"
+
+echo -e "\n${GREEN}Done!${NC} Run: ${CYAN}bun run dev${NC}\n"

@@ -1,144 +1,110 @@
-# ============================================
-# Resmo Workspace Setup Script (Windows)
-# ============================================
-# This script clones all app repositories into the apps/ folder
-# Run: .\setup.ps1
+# Resmo Workspace Setup - Clones all app repositories
+# Usage: .\setup.ps1 [OPTIONS]
+# Options:
+#   -GitOrg ORG    Set GitHub organization (default: your-org)
+#   -UseHTTPS      Use HTTPS instead of SSH
 
 param(
-    [string]$GitHost = "github.com",
-    [string]$GitOrg = "your-org",  # Change this to your GitHub organization/username
-    [switch]$UseHTTPS = $false
+    [string]$GitOrg = "your-org",
+    [switch]$UseHTTPS
 )
 
 $ErrorActionPreference = "Stop"
 
-# Repository configuration
+# === REPOSITORIES ===
 $repos = @(
-    @{ name = "resmo-admin"; folder = "admin" },
-    @{ name = "resmo-backend"; folder = "backend" },
-    @{ name = "resmo-company"; folder = "company" },
-    @{ name = "resmo-superadmin"; folder = "superadmin" },
-    @{ name = "resmo-conseiller"; folder = "conseiller" }
+    @{ repo = "resmo-admin"; folder = "admin" },
+    @{ repo = "resmo-backend"; folder = "backend" },
+    @{ repo = "resmo-company"; folder = "company" },
+    @{ repo = "resmo-superadmin"; folder = "superadmin" },
+    @{ repo = "resmo-conseiller"; folder = "conseiller" }
 )
 
-# Colors for output
-function Write-Step { param($msg) Write-Host "`n>> $msg" -ForegroundColor Cyan }
-function Write-Success { param($msg) Write-Host "   [OK] $msg" -ForegroundColor Green }
-function Write-Warning { param($msg) Write-Host "   [SKIP] $msg" -ForegroundColor Yellow }
-function Write-Error { param($msg) Write-Host "   [ERROR] $msg" -ForegroundColor Red }
+# === HELPERS ===
+function Log-Ok { param($msg) Write-Host "[OK] " -ForegroundColor Green -NoNewline; Write-Host $msg }
+function Log-Skip { param($msg) Write-Host "[SKIP] " -ForegroundColor Yellow -NoNewline; Write-Host $msg }
+function Log-Fail { param($msg) Write-Host "[FAIL] " -ForegroundColor Red -NoNewline; Write-Host $msg }
+function Log-Step { param($msg) Write-Host "`n$msg" -ForegroundColor Cyan }
 
-# Header
-Write-Host ""
-Write-Host "============================================" -ForegroundColor Magenta
-Write-Host "       Resmo Workspace Setup" -ForegroundColor Magenta
-Write-Host "============================================" -ForegroundColor Magenta
-
-# Check prerequisites
-Write-Step "Checking prerequisites..."
-
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Error "Git is not installed. Please install Git first."
-    exit 1
-}
-Write-Success "Git is installed"
-
-if (-not (Get-Command bun -ErrorAction SilentlyContinue)) {
-    Write-Host "   [WARN] Bun is not installed. Install from: https://bun.sh" -ForegroundColor Yellow
-}
-else {
-    Write-Success "Bun is installed"
-}
-
-# Create apps directory
-Write-Step "Creating apps directory..."
 $appsDir = Join-Path $PSScriptRoot "apps"
 
-if (-not (Test-Path $appsDir)) {
-    New-Item -ItemType Directory -Path $appsDir | Out-Null
-    Write-Success "Created apps/ directory"
-}
-else {
-    Write-Success "apps/ directory already exists"
-}
+Write-Host "`nResmo Workspace Setup`n" -ForegroundColor Cyan
 
-# Clone repositories
-Write-Step "Cloning repositories..."
+# === PREREQUISITES ===
+Log-Step "Checking prerequisites..."
 
-foreach ($repo in $repos) {
-    $repoPath = Join-Path $appsDir $repo.folder
+if (Get-Command git -ErrorAction SilentlyContinue) { Log-Ok "Git installed" }
+else { Log-Fail "Git not found - install from git-scm.com"; exit 1 }
+
+if (Get-Command bun -ErrorAction SilentlyContinue) { Log-Ok "Bun installed" }
+else { Log-Skip "Bun not found - install from bun.sh" }
+
+# === CLONE REPOS ===
+Log-Step "Cloning repositories..."
+
+if (-not (Test-Path $appsDir)) { New-Item -ItemType Directory -Path $appsDir | Out-Null }
+
+$cloned = 0; $skipped = 0; $failed = 0
+
+foreach ($r in $repos) {
+    $path = Join-Path $appsDir $r.folder
     
-    if (Test-Path $repoPath) {
-        Write-Warning "$($repo.folder) already exists, skipping..."
+    if (Test-Path $path) {
+        Log-Skip "$($r.folder) (exists)"
+        $skipped++
         continue
     }
     
-    # Build clone URL
-    if ($UseHTTPS) {
-        $cloneUrl = "https://$GitHost/$GitOrg/$($repo.name).git"
-    }
-    else {
-        $cloneUrl = "git@${GitHost}:$GitOrg/$($repo.name).git"
-    }
+    $url = if ($UseHTTPS) { "https://github.com/$GitOrg/$($r.repo).git" } else { "git@github.com:${GitOrg}/$($r.repo).git" }
     
-    Write-Host "   Cloning $($repo.name)..." -ForegroundColor Gray
-    
-    try {
-        git clone $cloneUrl $repoPath 2>&1 | Out-Null
-        Write-Success "Cloned $($repo.name) -> apps/$($repo.folder)"
-    }
-    catch {
-        Write-Error "Failed to clone $($repo.name): $_"
+    $result = git clone --quiet $url $path 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Log-Ok $r.folder
+        $cloned++
+    } else {
+        Log-Fail "$($r.folder) (no access or repo not found)"
+        $failed++
     }
 }
 
-# Setup environment file
-Write-Step "Setting up environment..."
+# === ENVIRONMENT ===
+Log-Step "Setting up environment..."
 
-$envExample = Join-Path $PSScriptRoot ".env.example"
 $envFile = Join-Path $PSScriptRoot ".env"
+$envExample = Join-Path $PSScriptRoot ".env.example"
 
-if (-not (Test-Path $envFile)) {
-    if (Test-Path $envExample) {
-        Copy-Item $envExample $envFile
-        Write-Success "Created .env from .env.example"
-        Write-Host "   [ACTION] Edit .env and add your secrets!" -ForegroundColor Yellow
-    }
-    else {
-        Write-Warning ".env.example not found, skipping .env creation"
-    }
-}
-else {
-    Write-Success ".env already exists"
+if (-not (Test-Path $envFile) -and (Test-Path $envExample)) {
+    Copy-Item $envExample $envFile
+    Log-Ok "Created .env from template"
+    Write-Host "    Edit .env with your secrets" -ForegroundColor Yellow
+} elseif (Test-Path $envFile) {
+    Log-Ok ".env exists"
+} else {
+    Log-Skip "No .env.example found"
 }
 
-# Install dependencies
-Write-Step "Installing dependencies..."
-
+# === INSTALL ===
 if (Get-Command bun -ErrorAction SilentlyContinue) {
-    Write-Host "   Running bun install..." -ForegroundColor Gray
+    Log-Step "Installing dependencies..."
     Push-Location $PSScriptRoot
     try {
-        bun install
-        Write-Success "Dependencies installed"
+        bun install --silent 2>$null
+        Log-Ok "Dependencies installed"
+    } catch {
+        Log-Fail "Install failed"
     }
-    catch {
-        Write-Error "Failed to install dependencies: $_"
-    }
-    finally {
-        Pop-Location
-    }
-}
-else {
-    Write-Warning "Bun not installed, skipping dependency installation"
+    Pop-Location
 }
 
-# Done
-Write-Host ""
-Write-Host "============================================" -ForegroundColor Green
-Write-Host "       Setup Complete!" -ForegroundColor Green
-Write-Host "============================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "  1. Edit .env with your secrets"
-Write-Host "  2. Run: bun run dev"
+# === SUMMARY ===
+Write-Host "`nSummary: " -ForegroundColor Cyan -NoNewline
+Write-Host "$cloned cloned, $skipped skipped, $failed failed"
+
+if ($failed -gt 0) {
+    Write-Host "Some repos failed - check access permissions" -ForegroundColor Yellow
+}
+
+Write-Host "`nDone! " -ForegroundColor Green -NoNewline
+Write-Host "Run: " -NoNewline
+Write-Host "bun run dev" -ForegroundColor Cyan
 Write-Host ""

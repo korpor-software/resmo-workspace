@@ -1,0 +1,15 @@
+# ================================
+# Bun Configuration for Resmo Monorepo
+# ================================
+
+[install]
+# Use exact versions for reproducibility
+exact = true
+
+[install.lockfile]
+# Save lockfile
+save = true
+
+[run]
+# Silent mode for cleaner output
+silent = false

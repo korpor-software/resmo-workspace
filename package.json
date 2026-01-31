@@ -1,0 +1,35 @@
+{
+  "name": "resmo-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun run --parallel dev:all",
+    "dev:all": "bun run --filter '*' dev",
+    "dev:backend": "bun run --filter resmo-backend dev",
+    "dev:admin": "bun run --filter resmo-admin dev",
+    "dev:company": "bun run --filter resmo-company dev",
+    "dev:superadmin": "bun run --filter resmo-superadmin dev",
+    "dev:conseiller": "bun run --filter resmo-conseiller dev",
+    "build": "bun run --filter '*' build",
+    "build:backend": "bun run --filter resmo-backend build",
+    "build:admin": "bun run --filter resmo-admin build",
+    "build:company": "bun run --filter resmo-company build",
+    "build:superadmin": "bun run --filter resmo-superadmin build",
+    "build:conseiller": "bun run --filter resmo-conseiller build",
+    "lint": "bun run --filter '*' lint",
+    "format": "bun run --filter '*' format",
+    "format:check": "bun run --filter '*' format:check",
+    "clean": "rimraf node_modules apps/*/node_modules",
+    "install:all": "bun install"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "bun@1.1.0"
+}

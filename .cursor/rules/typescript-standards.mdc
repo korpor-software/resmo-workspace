@@ -1,0 +1,58 @@
+---
+description: TypeScript coding standards
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript Standards
+
+## Type Definitions
+```typescript
+// ✅ Export interfaces from types/index.ts
+export interface Company {
+  id: string
+  _id?: string  // MongoDB ID
+  name: string
+  status: CompanyStatus
+}
+
+// ✅ Use type for unions/aliases
+export type CompanyStatus = 'pending' | 'active' | 'inactive' | 'archived'
+
+// ✅ Form data types
+export interface CreateCompanyFormData {
+  name: string
+  email: string
+}
+
+export interface UpdateCompanyFormData {
+  name?: string  // Optional for partial updates
+  email?: string
+}
+```
+
+## Naming Conventions
+- Interfaces: `PascalCase` (e.g., `Company`, `UserProfile`)
+- Types: `PascalCase` (e.g., `CompanyStatus`)
+- Functions: `camelCase` (e.g., `fetchCompanies`)
+- Constants: `SCREAMING_SNAKE_CASE` (e.g., `COUNTRIES`)
+- Files: `kebab-case.ts` (e.g., `company-management.tsx`)
+
+## Error Handling
+```typescript
+// ✅ GOOD - Typed error handling
+try {
+  const result = await apiCall()
+  if (!result.success) {
+    throw new Error(result.error)
+  }
+} catch (error) {
+  console.error('Operation failed:', error)
+  toast({ title: t('error'), variant: 'destructive' })
+}
+```
+
+## Avoid
+- `any` type - use `unknown` and narrow
+- Non-null assertions `!` - use optional chaining
+- Implicit returns in complex functions

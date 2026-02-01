@@ -1,0 +1,57 @@
+---
+description: Internationalization and translation guidelines
+globs: "**/locales/*.json"
+alwaysApply: false
+---
+
+# i18n Translation Guidelines
+
+## Supported Languages
+- `en.json` - English (default)
+- `fr.json` - French
+- `ar.json` - Arabic (RTL)
+
+## Structure
+```json
+{
+  "namespace": {
+    "key": "Value",
+    "nested": {
+      "key": "Nested value"
+    },
+    "withParam": "Hello {{name}}",
+    "plural": "{{count}} items"
+  }
+}
+```
+
+## Namespaces
+- `navigation` - Menu items
+- `dashboard` - Dashboard content
+- `companyManagement` - Company CRUD
+- `adminManagement` - Admin CRUD
+- `common` - Shared (save, cancel, error)
+- `auth` - Authentication
+- `profile` - User profile
+
+## Adding New Keys
+1. Add to `en.json` first
+2. Add French translation to `fr.json`
+3. Add Arabic translation to `ar.json`
+4. Use in component: `t('namespace.key')`
+
+## Best Practices
+```typescript
+// ✅ GOOD
+t('companyManagement.createCompany')
+t('common.save')
+t('companyManagement.totalCompanies', { count: 5 })
+
+// ❌ BAD - Hardcoded strings
+<Button>Save</Button>
+```
+
+## Arabic Considerations
+- RTL layout handled by `useRtl()` hook
+- Keep translations concise (Arabic can be longer)
+- Test UI with Arabic to check layout

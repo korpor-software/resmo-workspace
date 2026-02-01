@@ -1,0 +1,46 @@
+---
+description: Common micro-workflows and team patterns
+alwaysApply: true
+---
+
+# Micro Workflows - Team Patterns
+
+## Adding a New Feature (Full Stack)
+1. Define types in `features/{name}/types/index.ts`
+2. Create API functions in `features/{name}/api/index.ts`
+3. Build components in `features/{name}/components/`
+4. Add translations to ALL 3 locale files (en, fr, ar)
+5. Create/update backend endpoint if needed
+
+## Adding a New API Endpoint
+1. Add Zod validator in `validators/`
+2. Create controller function in `controllers/`
+3. Register route in `routes/index.ts`
+4. Use `successResponse()` / `errorResponse()` helpers
+
+## Database Changes
+- Add new fields as optional first, migrate data, then make required
+- Always add indexes for frequently queried fields
+- Use `timestamps: true` on all Mongoose schemas
+
+## Error Handling Pattern
+```typescript
+// Frontend - always show user-friendly messages
+try {
+  const result = await api.create(data)
+  if (!result.success) throw new Error(result.error)
+  toast({ title: t('success.created') })
+} catch (error) {
+  toast({ title: t('error.createFailed'), variant: 'destructive' })
+}
+
+// Backend - always return structured errors
+if (!validation.success) {
+  return errorResponse(validation.error.message, 400)
+}
+```
+
+## Status Flow for Entities
+`pending` → `active` ↔ `inactive` → `archived`
+
+Never delete data - always soft-delete by setting status to `archived`.

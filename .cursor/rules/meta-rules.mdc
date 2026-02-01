@@ -1,0 +1,31 @@
+---
+description: Meta rules - how Cursor should interpret and apply all other rules
+alwaysApply: true
+---
+
+# Meta Rules - Rule Interpretation Guide
+
+## Rule Priority (highest to lowest)
+1. Security rules (never bypass)
+2. Project-specific patterns
+3. Tech stack conventions
+4. General best practices
+
+## When Rules Conflict
+- Specific rules override general rules
+- File-scoped rules override global rules
+- Explicit instructions in chat override rules
+
+## Default Behaviors
+When no rule matches:
+- Follow existing patterns in the file
+- Check similar files in the codebase for conventions
+- Ask for clarification on architectural decisions
+
+## Rule Application
+- Read the FULL rule before generating code
+- Apply ALL relevant rules, not just the first match
+- When uncertain, prefer explicit over implicit
+
+## Important Context Placement
+Critical information is placed at the END of rules (LLMs prioritize recent context).

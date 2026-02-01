@@ -1,0 +1,72 @@
+---
+description: UI component patterns and shadcn/ui usage
+globs: "**/components/**/*.tsx"
+alwaysApply: false
+---
+
+# UI Component Guidelines
+
+## Import Pattern
+```typescript
+// UI primitives from shadcn/ui
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+
+// Icons from lucide-react
+import { Loader2, Check, ChevronsUpDown } from 'lucide-react'
+
+// Utilities
+import { cn } from '@/lib/utils'
+```
+
+## Common Patterns
+
+### Loading States
+```tsx
+<Button disabled={loading}>
+  {loading ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      {t('common.loading')}
+    </>
+  ) : (
+    t('common.save')
+  )}
+</Button>
+```
+
+### Searchable Select (Combobox)
+```tsx
+<Popover open={open} onOpenChange={setOpen}>
+  <PopoverTrigger asChild>
+    <Button variant="outline" className="w-full justify-between">
+      {value || t('placeholder')}
+      <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent>
+    <Command>
+      <CommandInput placeholder={t('search')} />
+      <CommandList>
+        <CommandEmpty>{t('noResults')}</CommandEmpty>
+        <CommandGroup>
+          {items.map((item) => (
+            <CommandItem key={item.id} onSelect={() => setValue(item)}>
+              <Check className={cn("mr-2 h-4 w-4", 
+                selected === item.id ? "opacity-100" : "opacity-0"
+              )} />
+              {item.name}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  </PopoverContent>
+</Popover>
+```
+
+### Data Tables
+- Use `@tanstack/react-table` with `createColumns()`
+- Include pagination with `pageIndex`, `pageSize`
+- Add row actions via `DropdownMenu`

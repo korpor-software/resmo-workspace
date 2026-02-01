@@ -1,0 +1,58 @@
+---
+description: Git commit message conventions and workflow
+alwaysApply: true
+---
+
+# Commit Message Convention
+
+## Format
+```
+<type>(<scope>): <subject>
+
+[optional body - what and why, not how]
+```
+
+## Types (in order of frequency)
+| Type | When to Use |
+|------|-------------|
+| `feat` | New feature or capability |
+| `fix` | Bug fix |
+| `refactor` | Code change that neither fixes nor adds |
+| `chore` | Dependencies, config, build changes |
+| `style` | Formatting only (no logic change) |
+| `docs` | Documentation only |
+| `perf` | Performance improvement |
+| `test` | Adding or updating tests |
+
+## Scopes
+| Scope | Description |
+|-------|-------------|
+| `backend` | API, controllers, models |
+| `superadmin` | Superadmin dashboard |
+| `company` | Company dashboard |
+| `admin` | Admin dashboard |
+| `conseiller` | Conseiller dashboard |
+| `ui` | Shared components |
+| `i18n` | Translations |
+| `auth` | Authentication |
+| `db` | Database schemas/migrations |
+
+## Examples
+```bash
+# Feature
+feat(superadmin): add country and category to company management
+
+# Bug fix  
+fix(backend): handle expired JWT tokens gracefully
+
+# Multiple scopes
+feat(ui,i18n): add searchable combobox with RTL support
+
+# Breaking change (add ! after type)
+feat(api)!: change company response structure
+```
+
+## Rules
+- Subject: max 72 chars, imperative mood, no period
+- Body: explain WHAT changed and WHY (not how)
+- Reference issues: `Fixes #123` or `Closes #456`

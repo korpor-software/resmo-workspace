@@ -1,0 +1,78 @@
+---
+description: React and frontend patterns for Resmo dashboards
+globs: apps/**/src/**/*.tsx
+alwaysApply: false
+---
+
+# Frontend Patterns
+
+## Feature Module Structure
+```
+features/{feature-name}/
+├── api/index.ts        # API calls using apiRequest
+├── components/
+│   ├── columns.tsx     # TanStack Table columns
+│   ├── data-table.tsx  # Table with pagination
+│   └── *-dialogs.tsx   # Confirm/form dialogs
+├── types/index.ts      # TypeScript interfaces
+└── index.tsx           # Main exported component
+```
+
+## Component Template
+```tsx
+function FeaturePage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  
+  // 1. State
+  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<Type[]>([])
+  
+  // 2. Effects
+  useEffect(() => { fetchData() }, [deps])
+  
+  // 3. Handlers
+  const handleSubmit = async () => { ... }
+  
+  // 4. Render
+  return (
+    <>
+      <Header>...</Header>
+      <Main>...</Main>
+      <Dialogs />
+    </>
+  )
+}
+```
+
+## API Layer Pattern
+```tsx
+// Always return { success, data?, error? }
+export const featureApi = {
+  getAll: (page, limit, search) =>
+    apiRequest<ResponseType>(`/api/role/resource?${params}`),
+  
+  create: (data) =>
+    apiRequest<Type>('/api/role/resource', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+}
+```
+
+## Form Pattern (react-hook-form + Zod)
+```tsx
+const { register, handleSubmit, control } = useForm<FormData>({
+  defaultValues: { ... }
+})
+
+// For custom inputs (Select, Combobox)
+<Controller name="field" control={control} render={({ field }) => (
+  <Select value={field.value} onValueChange={field.onChange}>
+    ...
+  </Select>
+)} />
+```
+
+## CRITICAL: Always update all 3 translation files when adding UI text.

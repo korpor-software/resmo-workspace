@@ -1,0 +1,42 @@
+---
+description: Security and sensitive data handling rules
+alwaysApply: true
+---
+
+# Security Rules (NEVER BYPASS)
+
+## Secrets & Environment Variables
+- NEVER hardcode secrets, API keys, passwords, or tokens
+- NEVER commit `.env` files or credentials
+- NEVER log sensitive data (passwords, tokens, PII)
+- Always use environment variables via `process.env` or `import.meta.env`
+
+## Authentication
+- NEVER bypass authentication middleware
+- NEVER expose internal user IDs in URLs (use slugs or UUIDs)
+- Always validate JWT tokens server-side
+- Always hash passwords with bcrypt (cost factor 10+)
+
+## API Security
+- Always validate and sanitize user input with Zod
+- Always use parameterized queries (Mongoose handles this)
+- Never trust client-side data for authorization decisions
+- Always check user permissions in controllers
+
+## File Uploads
+- Validate file types server-side (not just extension)
+- Limit file sizes (5MB max for images)
+- Store in R2/S3, never in git or local filesystem
+
+## What to NEVER Generate
+```typescript
+// ❌ NEVER
+const apiKey = "sk-1234567890"
+console.log("User password:", password)
+localStorage.setItem("password", pwd)
+
+// ✅ ALWAYS
+const apiKey = process.env.API_KEY
+// Never log passwords
+localStorage.setItem("token", jwt) // Only tokens, never passwords
+```

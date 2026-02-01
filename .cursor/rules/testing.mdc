@@ -1,0 +1,62 @@
+---
+description: Testing patterns and conventions
+globs: "**/*.test.ts"
+alwaysApply: false
+---
+
+# Testing Patterns
+
+## Test File Location
+- Place tests next to source: `feature.ts` → `feature.test.ts`
+- Or in `__tests__/` folder for complex features
+
+## Bun Test Structure
+```typescript
+import { describe, test, expect, beforeEach } from 'bun:test'
+
+describe('FeatureName', () => {
+  beforeEach(() => {
+    // Reset state
+  })
+
+  test('should do expected behavior', () => {
+    // Arrange
+    const input = { ... }
+    
+    // Act
+    const result = functionUnderTest(input)
+    
+    // Assert
+    expect(result).toEqual(expected)
+  })
+
+  test('should handle error case', () => {
+    expect(() => functionUnderTest(badInput)).toThrow()
+  })
+})
+```
+
+## API Testing
+```typescript
+test('POST /api/resource creates item', async () => {
+  const response = await fetch('http://localhost:3000/api/resource', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${testToken}`
+    },
+    body: JSON.stringify(validData)
+  })
+  
+  const result = await response.json()
+  expect(result.success).toBe(true)
+  expect(result.data).toHaveProperty('id')
+})
+```
+
+## What to Test
+- ✅ Business logic functions
+- ✅ API endpoints (happy path + errors)
+- ✅ Validation schemas
+- ❌ UI components (use manual testing)
+- ❌ Third-party libraries

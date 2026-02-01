@@ -1,0 +1,70 @@
+---
+description: Backend API patterns for Bun + MongoDB
+globs: apps/backend/**/*.ts
+alwaysApply: false
+---
+
+# Backend Patterns
+
+## Directory Structure
+```
+src/
+├── controllers/    # Request handlers (one per resource)
+├── models/         # Mongoose schemas
+├── middleware/     # Auth, CORS, error handling
+├── routes/         # Route registration
+├── validators/     # Zod schemas
+└── utils/          # Helpers (jwt, email, response)
+```
+
+## Controller Pattern
+```typescript
+export async function createResource(req: Request): Promise<Response> {
+  try {
+    // 1. Validate input
+    const body = await req.json()
+    const validation = createSchema.safeParse(body)
+    if (!validation.success) {
+      return errorResponse(validation.error.message, 400)
+    }
+
+    // 2. Check permissions (if needed)
+    const user = req.user // From auth middleware
+    if (!user) return errorResponse('Unauthorized', 401)
+
+    // 3. Business logic
+    const resource = await Model.create(validation.data)
+
+    // 4. Return response
+    return successResponse(resource, { message: 'Created' })
+  } catch (error) {
+    console.error('Create resource error:', error)
+    return errorResponse('Failed to create resource', 500)
+  }
+}
+```
+
+## Response Helpers (ALWAYS use these)
+```typescript
+return successResponse(data)                    // 200
+return successResponse(data, { total, page })   // 200 with meta
+return errorResponse('Not found', 404)          // Error with status
+```
+
+## Mongoose Schema Pattern
+```typescript
+const schema = new Schema({
+  name: { type: String, required: true },
+  status: { 
+    type: String, 
+    enum: ['pending', 'active', 'inactive', 'archived'],
+    default: 'pending'
+  },
+  // Always include for soft-delete
+}, { timestamps: true })
+
+// Add indexes for query performance
+schema.index({ status: 1, createdAt: -1 })
+```
+
+## CRITICAL: Never delete records - set status to 'archived' instead.

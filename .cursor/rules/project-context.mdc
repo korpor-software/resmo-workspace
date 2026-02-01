@@ -1,0 +1,45 @@
+---
+description: Resmo project context and architecture overview
+alwaysApply: true
+---
+
+# Resmo - Real Estate Management Platform
+
+## Project Overview
+Multi-tenant SaaS platform for real estate agencies with role-based access control.
+
+## Monorepo Structure (Bun Workspaces)
+```
+apps/
+├── backend/       # Bun + MongoDB API server (port 3000)
+├── superadmin/    # Platform administration (port 5173)
+├── company/       # Company dashboard (port 5174)
+├── admin/         # Agency admin dashboard (port 5175)
+└── conseiller/    # Real estate consultant dashboard (port 5176)
+```
+
+## Tech Stack
+- **Runtime**: Bun 1.1+ (NOT Node.js)
+- **Backend**: Bun native server, MongoDB/Mongoose, Zod validation
+- **Frontend**: React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS v4
+- **UI**: Radix UI primitives, shadcn/ui components
+- **i18n**: react-i18next (EN, FR, AR with RTL support)
+- **State**: Zustand for auth, React Query for server state
+- **Storage**: Cloudflare R2 for file uploads
+
+## User Roles Hierarchy
+1. **Superadmin** - Platform owner, manages companies
+2. **Company** - Real estate company owner
+3. **Admin** - Agency administrator  
+4. **Conseiller** - Real estate consultant
+
+## Critical Conventions
+- MongoDB `_id` maps to `id` in frontend types
+- API responses: `{ success: boolean, data?: T, error?: string, meta?: {...} }`
+- JWT tokens: `localStorage.getItem('{role}_token')`
+- Translations: `locales/{en,fr,ar}.json` - ALWAYS update all 3
+
+## File Naming
+- Components: `kebab-case.tsx` (e.g., `company-dialogs.tsx`)
+- Types: `index.ts` in `types/` folder
+- API: `index.ts` in `api/` folder

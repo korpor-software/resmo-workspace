@@ -1,0 +1,164 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% ── Page geometry ─────────────────────────────────────────
+\geometry{margin=1in, headheight=15pt}
+
+% ── Colors ────────────────────────────────────────────────
+\definecolor{resmoBlue}{HTML}{1E3A5F}
+\definecolor{resmoAccent}{HTML}{2563EB}
+\definecolor{sectionGray}{HTML}{4B5563}
+
+% ── Section styling ──────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{resmoBlue}}
+  {\thesection}{1em}{}
+
+% ── Header / Footer ──────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{sectionGray}{Resmo}}
+\fancyhead[R]{\small\textcolor{sectionGray}{ahmed@korpor.com}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hyperlink styling ────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=resmoAccent,
+  urlcolor=resmoAccent
+}
+
+% ── Document ─────────────────────────────────────────────
+\begin{document}
+
+% ── Title ────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries\color{resmoBlue} Marketing Module Research Review}
+\end{center}
+
+\vspace{1em}
+
+% ═══════════════════════════════════════════════════════════
+\section{Gaps --- Missing Features or Considerations}
+% ═══════════════════════════════════════════════════════════
+
+\begin{itemize}[leftmargin=1.5em, itemsep=0.5em]
+  \item \textbf{No email marketing / drip campaigns}: This is a glaring omission. Email nurturing is the highest-ROI channel in real estate (open house follow-ups, price drop alerts, new listing notifications to buyer lists). Must be included.
+
+  \item \textbf{No WhatsApp / SMS marketing}: In MENA and French-speaking African markets (the AR + FR locales suggest this is the target), WhatsApp is the primary communication channel. WhatsApp Business API integration for broadcast lists and automated responses is table stakes.
+
+  \item \textbf{No referral / word-of-mouth system}: Real estate runs on referrals. A simple referral tracking program (past clients referring new ones, with incentives) is missing.
+
+  \item \textbf{No listing syndication}: Pushing listings to external portals (Idealista, SeLoger, Bayut, etc.) is often bundled under marketing. If Biens Management doesn't own this, Marketing should.
+
+  \item \textbf{No QR code generation}: For yard signs, flyers, business cards --- linking physical marketing to digital tracking. Trivial to build, high perceived value.
+
+  \item \textbf{No print material generation}: Brochures, property flyers, window display cards. Agencies still use physical marketing heavily. The Design sub-module should cover this.
+
+  \item \textbf{No review / reputation management}: Google Reviews are a top local SEO signal. Automated review request emails/SMS after transactions close would tie into both SEO and brand trust.
+
+  \item \textbf{No A/B testing framework mentioned}: For ads, landing pages, and email subject lines. Without this, the ``optimization'' promise in Strategy \& Planning is hollow.
+
+  \item \textbf{No lead attribution model}: ``Source tracking'' is mentioned but not fleshed out. Multi-touch attribution is needed (a lead saw a Google Ad, then visited via SEO, then converted on a landing page --- who gets credit?). This is what justifies marketing spend.
+
+  \item \textbf{Budget allocation ``plan'' is vague}: Is this AI-recommended? Manual? Template-based? This needs to be concrete --- ideally AI-suggested based on agency size, location, and listing volume.
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════
+\section{Overlaps --- Feature Ownership Boundaries}
+% ═══════════════════════════════════════════════════════════
+
+\begin{center}
+\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{3.2cm}
+                   >{\raggedright\arraybackslash}p{3cm}
+                   >{\raggedright\arraybackslash}p{3cm}
+                   >{\raggedright\arraybackslash}p{4.5cm}}
+\toprule
+\textbf{Feature} & \textbf{Currently In} & \textbf{Should Belong To} & \textbf{Rationale} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Feature} & \textbf{Currently In} & \textbf{Should Belong To} & \textbf{Rationale} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Website builder &
+Marketing &
+\textbf{``Your Site Developer''} &
+Full websites are a service offering, not a self-serve marketing tool. Marketing should only own \textbf{landing pages} (single-purpose, campaign-tied). \\
+\midrule
+
+Logo generator &
+Marketing (Design) &
+\textbf{Resmo Design} &
+Logo/brand identity is a one-time setup activity, not a recurring marketing task. Design module should own all brand assets. \\
+\midrule
+
+Brand kit builder &
+Marketing (Design) &
+\textbf{Resmo Design} &
+Brand guidelines are foundational, not campaign-specific. \\
+\midrule
+
+Social templates &
+Marketing (Design) &
+\textbf{Marketing} (correct) &
+Campaign assets, iterated frequently. Marketing owns them but should pull brand kit from Design. \\
+\midrule
+
+Ad creative generator &
+Marketing (Design) &
+\textbf{Marketing} (correct) &
+Directly tied to ad campaigns. \\
+\midrule
+
+Community inbox &
+Marketing (Social) &
+\textbf{Resmo CRM} &
+Responding to DMs/comments is lead management, not marketing automation. CRM should own all conversations. \\
+\midrule
+
+Campaign calendar &
+Marketing (Strategy) &
+\textbf{Productivity or Marketing} &
+If marketing-only, keep it. If it syncs with team tasks/assignments, Productivity should provide the calendar engine and Marketing overlays campaign data. \\
+\midrule
+
+Leads generated / conversion tracking &
+Marketing (Analytics) &
+\textbf{Shared: Marketing + CRM} &
+Marketing tracks lead \textit{acquisition}. CRM tracks lead \textit{conversion}. Handoff: once a lead enters the pipeline, CRM owns it. \\
+\midrule
+
+Target persona builder &
+Marketing (Strategy) &
+\textbf{Marketing} (correct) &
+But should feed into CRM segmentation --- build once, use everywhere. \\
+\midrule
+
+Property views analytics &
+Marketing (Analytics) &
+\textbf{Resmo Biens Management} &
+Property-level analytics (views, saves, inquiries) belong with the listing. Marketing gets aggregate/campaign-level metrics. \\
+
+\end{longtable}
+\end{center}
+
+\end{document}

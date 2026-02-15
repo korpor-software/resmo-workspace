@@ -31,10 +31,6 @@ bun.lockb
 *.swo
 .DS_Store
 
-# Cursor (keep rules, ignore cache)
-!.cursor/rules/
-.cursor/mcp/
-
 # Logs
 logs/
 *.log

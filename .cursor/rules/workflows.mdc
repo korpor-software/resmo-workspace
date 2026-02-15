@@ -1,0 +1,78 @@
+---
+description: Feature implementation and common development workflows
+globs: "apps/**/src/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Development Workflows
+
+## Before Writing ANY Code
+
+### 1. ANALYZE (Understand First)
+- Read existing related code in the codebase
+- Identify patterns already used for similar features
+- Check types, API structure, component patterns
+- Find reusable code (don't reinvent)
+
+### 2. PLAN (Think Before Coding)
+- List files that need changes
+- Define data flow: API -> Types -> Components
+- Identify edge cases and error states
+- Consider: translations, permissions, validation
+
+## Implementation Order
+
+```
+1. Types       (features/{name}/types/index.ts)
+2. API layer   (features/{name}/api/index.ts)
+3. Backend     (controllers, validators, routes)
+4. Components  (features/{name}/components/)
+5. Translations (ALL 3 locale files: en, fr, ar)
+```
+
+## Adding a New API Endpoint (Backend)
+1. Add Zod validator in `validators/`
+2. Create controller function in `controllers/`
+3. Register route in `routes/index.ts`
+4. Use response helpers: `successResponse()`, `createdResponse()`, `paginatedResponse()`
+
+## Database Changes
+- Add new fields as optional first, migrate data, then make required
+- Always add indexes for frequently queried fields
+- Use `timestamps: true` on all Mongoose schemas
+
+## Entity Status Flow
+`pending` -> `active` <-> `inactive` -> `archived`
+
+Never delete data -- always soft-delete by setting status to `archived`.
+
+## Verification Checklist
+
+After implementation, verify:
+
+**Security**
+- [ ] No hardcoded secrets?
+- [ ] Input validated with Zod?
+- [ ] Auth/permissions checked?
+
+**Robustness**
+- [ ] Error states handled?
+- [ ] Loading states shown?
+- [ ] Empty states covered?
+
+**Quality**
+- [ ] Types complete (no `any`)?
+- [ ] Follows existing patterns?
+- [ ] Translations in en/fr/ar?
+
+## Summary Format
+
+After implementation, provide:
+```
+## Changes Made
+- file1.ts: what changed
+- file2.tsx: what changed
+
+## Verified
+Security | Error handling | Types | i18n
+```

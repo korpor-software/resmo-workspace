@@ -1,75 +1,54 @@
 ---
 description: Common mistakes to avoid - anti-patterns
-alwaysApply: true
+globs: "apps/**/src/**/*.{ts,tsx}"
+alwaysApply: false
 ---
 
 # Anti-Patterns - What NOT to Do
 
 ## Code Generation
 ```typescript
-// ❌ NEVER generate placeholder/mock data
+// NEVER generate placeholder/mock data
 const companies = [{ id: 1, name: "Test" }]
 
-// ✅ ALWAYS fetch from API or use empty state
+// ALWAYS fetch from API or use empty state
 const [companies, setCompanies] = useState<Company[]>([])
 ```
 
 ## API Calls
 ```typescript
-// ❌ NEVER use fetch directly in components
+// NEVER use fetch directly in components
 const data = await fetch('/api/...')
 
-// ✅ ALWAYS use apiRequest wrapper
+// ALWAYS use apiRequest wrapper from @/lib/api
 const result = await featureApi.getAll()
-```
-
-## Error Handling
-```typescript
-// ❌ NEVER swallow errors silently
-try { await api.call() } catch (e) {}
-
-// ✅ ALWAYS handle and show user feedback
-try {
-  await api.call()
-} catch (e) {
-  toast({ title: t('error.failed'), variant: 'destructive' })
-}
 ```
 
 ## Translations
 ```typescript
-// ❌ NEVER hardcode user-facing strings
+// NEVER hardcode user-facing strings
 <Button>Save Changes</Button>
 
-// ✅ ALWAYS use translation keys
+// ALWAYS use translation keys
 <Button>{t('common.save')}</Button>
 ```
 
 ## State Management
 ```typescript
-// ❌ NEVER store derived state
+// NEVER store derived state
 const [filteredItems, setFilteredItems] = useState([])
 
-// ✅ ALWAYS compute derived values
-const filteredItems = useMemo(() => 
+// ALWAYS compute derived values
+const filteredItems = useMemo(() =>
   items.filter(i => i.status === filter), [items, filter]
 )
 ```
 
-## TypeScript
-```typescript
-// ❌ NEVER use `any`
-const data: any = response
-
-// ✅ ALWAYS type properly or use `unknown`
-const data: Company = response.data
-```
-
 ## MongoDB IDs
 ```typescript
-// ❌ NEVER assume id exists
+// NEVER assume id exists
 company.id
 
-// ✅ ALWAYS handle both _id and id
+// ALWAYS handle both _id and id
 const companyId = company._id || company.id
 ```

@@ -1,6 +1,6 @@
 ---
 description: Pre-commit hook handling and TypeScript error fixing before commits
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Pre-Commit Hook Rules
@@ -10,16 +10,19 @@ Some apps have Husky pre-commit hooks that run `tsc --noEmit` or `tsc -b` before
 
 | App | Hook | Command |
 |-----|------|---------|
-| `backend` | `.husky/pre-commit` | `tsc --noEmit` |
-| `superadmin` | `.husky/pre-commit` | `tsc -b` |
-| `company` | `.husky/pre-commit` | `tsc -b` |
-| `admin` | `.husky/pre-commit` | `tsc -b` |
+| `backend` | `.husky/pre-commit` | `bun run typecheck` → `tsc --noEmit` |
+| `superadmin` | `.husky/pre-commit` | `bun run typecheck` → `tsc -b` |
+| `company` | `.husky/pre-commit` | `bun run typecheck` → `tsc -b` |
+| `admin` | `.husky/pre-commit` | `bun run typecheck` → `tsc -b` |
+| `consillier` | `.husky/pre-commit` | `bun run typecheck` → `tsc -b` |
 
-## MANDATORY: Fix All Pre-Commit Errors Before Committing
-- NEVER use `--no-verify` to bypass pre-commit hooks
-- If a commit fails due to TypeScript errors, **fix the errors** and retry
-- If the errors are pre-existing (not from your changes), still fix them in the same commit or a separate `fix` commit
-- Run `npx tsc --noEmit` (backend) or `npx tsc -b` (frontend apps) manually before committing to catch issues early
+## MANDATORY: Fix ALL Type & Build Errors Before Committing
+- NEVER use `--no-verify` to bypass pre-commit hooks — no exceptions, even for merge commits
+- If a commit fails due to TypeScript errors, **fix every error** and retry
+- **Fix pre-existing errors too**: If errors existed before your changes (from other branches, merges, or previous commits), you MUST fix them. Do not skip or ignore them. Treat them as your responsibility.
+- After merging another branch (e.g. `git pull origin dev`), always run the type checker immediately and fix any errors before committing the merge
+- Run `bun run typecheck` manually before committing to catch issues early
+- When in doubt: **fix the error, don't bypass the hook**
 
 ## Common Pre-Commit Errors & Fixes
 
@@ -54,9 +57,9 @@ nodemailer.createTransport({
 
 ## Workflow
 1. Make your code changes
-2. Run the type checker manually: `npx tsc --noEmit` (or `npx tsc -b`)
+2. Run the type checker manually: `bun run typecheck` (from the app directory)
 3. Fix any errors found
 4. Stage and commit — the hook will verify automatically
 5. If the hook still fails, read the error output carefully and fix
 
-## CRITICAL: Never leave broken pre-commit hooks for the next person.
+## CRITICAL: Never leave broken type checks or build errors for the next person. Always fix, never bypass.

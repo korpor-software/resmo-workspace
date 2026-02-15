@@ -1,0 +1,96 @@
+---
+description: Correct commands for each app - package manager, dev server, type checking, installs
+alwaysApply: true
+---
+
+# Commands Reference (Per App)
+
+## Package Manager
+- **ALL apps use Bun** -- NEVER use `npm`, `npx`, `yarn`, or `pnpm`
+- Root workspace: `bun install` (installs all apps)
+- Single app: `cd apps/{app}` then `bun install`
+
+## Dev Servers
+
+| App | Command | Port | Working Directory |
+|-----|---------|------|-------------------|
+| Backend | `bun run dev` | 3000 | `apps/backend` |
+| Superadmin | `bun run dev` | 5173 | `apps/superadmin` |
+| Company | `bun run dev` | 5174 | `apps/company` |
+| Admin | `bun run dev` | 5175 | `apps/admin` |
+| Conseiller | `bun run dev` | 5176 | `apps/consillier` |
+| All at once | `bun run dev` | -- | Workspace root |
+
+## Type Checking (run before every commit)
+
+| App | Command | What it runs |
+|-----|---------|-------------|
+| Backend | `bun run typecheck` | `tsc --noEmit` |
+| Superadmin | `bun run typecheck` | `tsc -b` |
+| Company | `bun run typecheck` | `tsc -b` |
+| Admin | `bun run typecheck` | `tsc -b` |
+| Conseiller | `bun run typecheck` | `tsc -b` |
+
+**ALWAYS** use `bun run typecheck` -- never `npx tsc`, never `tsc` directly.
+
+## Build
+
+| App | Command |
+|-----|---------|
+| Backend | `bun run build` (runs `node build.mjs`) |
+| Frontend apps | `bun run build` (runs `tsc -b && vite build`) |
+| All at once | `bun run build` from workspace root |
+
+## Linting & Formatting (Frontend apps only)
+
+```bash
+bun run lint          # ESLint
+bun run format        # Prettier write
+bun run format:check  # Prettier check
+```
+
+## Installing Dependencies
+
+```bash
+# Add a dependency to a specific app
+cd apps/backend
+bun add package-name
+
+# Add a dev dependency
+bun add -d package-name
+
+# Install all workspace dependencies from root
+bun install
+```
+
+## Seeding Database (Backend only)
+
+```bash
+cd apps/backend
+bun run seed
+```
+
+## Common Mistakes to AVOID
+
+```bash
+# WRONG -- npm/npx don't exist in this project
+npx tsc --noEmit
+npm install
+npm run dev
+
+# CORRECT -- always use bun
+bun run typecheck
+bun install
+bun run dev
+
+# WRONG -- using tsc directly
+tsc --noEmit
+tsc -b
+
+# CORRECT -- use the script
+bun run typecheck
+```
+
+## Shell Note (Windows/PowerShell)
+- Use `;` to chain commands, NOT `&&` (PowerShell doesn't support `&&` in older versions)
+- Example: `git add .; git commit -m "message"`

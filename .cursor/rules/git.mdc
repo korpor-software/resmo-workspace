@@ -1,0 +1,90 @@
+---
+description: Git workflow, commit conventions, and multi-repo structure
+alwaysApply: false
+---
+
+# Git Workflow & Commit Conventions
+
+## Multi-Repo Structure (CRITICAL)
+
+Each app is a **separate git repository**. The workspace root has its own repo for rules/config.
+
+```
+Resmo/                    # Workspace repo (rules, root config)
+├── .cursor/rules/        # Committed here
+├── package.json          # Workspace config
+└── apps/                 # IGNORED in workspace repo
+    ├── backend/          # Separate git repo → github.com/.../resmo-backend
+    ├── superadmin/       # Separate git repo → github.com/.../resmo-superadmin
+    ├── company/          # Separate git repo → github.com/.../resmo-company
+    ├── admin/            # Separate git repo → github.com/.../resmo-admin
+    └── consillier/       # Separate git repo → github.com/.../resmo-consillier
+```
+
+## Which Repo to Commit To?
+
+| Changed Files | Commit To | Working Directory |
+|--------------|-----------|-------------------|
+| `apps/backend/*` | backend repo | `apps/backend` |
+| `apps/superadmin/*` | superadmin repo | `apps/superadmin` |
+| `apps/company/*` | company repo | `apps/company` |
+| `apps/admin/*` | admin repo | `apps/admin` |
+| `apps/consillier/*` | consillier repo | `apps/consillier` |
+| `.cursor/rules/*` | workspace root repo | Workspace root |
+| `package.json` (root) | workspace root repo | Workspace root |
+
+**NEVER** commit from workspace root expecting app changes to be included.
+
+## Cross-App Features
+When a feature spans multiple apps:
+1. Commit backend changes first -> push
+2. Commit frontend changes -> push
+3. Use same commit message prefix for traceability
+
+## Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+[optional body - what and why, not how]
+```
+
+### Types
+
+| Type | When to Use |
+|------|-------------|
+| `feat` | New feature or capability |
+| `fix` | Bug fix |
+| `refactor` | Code change that neither fixes nor adds |
+| `chore` | Dependencies, config, build changes |
+| `style` | Formatting only (no logic change) |
+| `docs` | Documentation only |
+| `perf` | Performance improvement |
+| `test` | Adding or updating tests |
+
+### Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `backend` | API, controllers, models |
+| `superadmin` | Superadmin dashboard |
+| `company` | Company dashboard |
+| `admin` | Admin dashboard |
+| `conseiller` | Conseiller dashboard |
+| `ui` | Shared components |
+| `i18n` | Translations |
+| `auth` | Authentication |
+| `db` | Database schemas/migrations |
+
+### Examples
+```bash
+feat(superadmin): add country and category to company management
+fix(backend): handle expired JWT tokens gracefully
+feat(ui,i18n): add searchable combobox with RTL support
+feat(api)!: change company response structure  # breaking change
+```
+
+### Rules
+- Subject: max 72 chars, imperative mood, no period
+- Body: explain WHAT changed and WHY (not how)
+- Reference issues: `Fixes #123` or `Closes #456`

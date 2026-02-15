@@ -18,47 +18,147 @@ features/{feature-name}/
 └── index.tsx           # Main exported component
 ```
 
-## Component Template
-```tsx
-function FeaturePage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { toast } = useToast()
-  
-  // 1. State
-  const [loading, setLoading] = useState(false)
-  const [data, setData] = useState<Type[]>([])
-  
-  // 2. Effects
-  useEffect(() => { fetchData() }, [deps])
-  
-  // 3. Handlers
-  const handleSubmit = async () => { ... }
-  
-  // 4. Render
-  return (
-    <>
-      <Header>...</Header>
-      <Main>...</Main>
-      <Dialogs />
-    </>
-  )
-}
-```
+## API Layer Pattern (apiRequest wrapper)
+```typescript
+import { apiRequest } from '@/lib/api'
+import type { Lead, LeadFormData } from '../types'
 
-## API Layer Pattern
-```tsx
-// Always return { success, data?, error? }
-export const featureApi = {
-  getAll: (page, limit, search) =>
-    apiRequest<ResponseType>(`/api/role/resource?${params}`),
-  
-  create: (data) =>
-    apiRequest<Type>('/api/role/resource', {
+export const leadManagementApi = {
+  getAll: async (page = 1, limit = 10, search = '', stage = 'all') => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    })
+    if (search) params.append('search', search)
+    if (stage !== 'all') params.append('stage', stage)
+    return apiRequest<{ data: Lead[]; totalPages: number; total: number }>(
+      `/api/role/leads?${params.toString()}`
+    )
+  },
+  getById: async (id: string) =>
+    apiRequest<Lead>(`/api/role/leads/${id}`),
+  create: async (data: LeadFormData) =>
+    apiRequest<Lead>('/api/role/leads', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  update: async (id: string, data: Partial<LeadFormData>) =>
+    apiRequest<Lead>(`/api/role/leads/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  archive: async (id: string) =>
+    apiRequest(`/api/role/leads/${id}/archive`, { method: 'PUT' }),
 }
+```
+
+## Data Fetching Pattern (useState + useEffect)
+The codebase currently uses manual state management for data fetching (TanStack Query is configured but not yet used in features):
+```tsx
+function FeaturePage() {
+  const { t } = useTranslation()
+  const { toast } = useToast()
+
+  const [data, setData] = useState<Lead[]>([])
+  const [loading, setLoading] = useState(true)
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const response = await leadManagementApi.getAll(
+        pagination.pageIndex + 1,
+        pagination.pageSize,
+      )
+      if (response.success && response.data) {
+        setData(response.data.data)
+      }
+    } catch (error) {
+      toast({ title: t('error.fetchFailed'), variant: 'destructive' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [pagination.pageIndex, pagination.pageSize])
+}
+```
+
+## TanStack Router (File-based routing)
+
+### Root Route
+```tsx
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient
+}>()({
+  component: RootLayout,
+  notFoundComponent: NotFoundError,
+  errorComponent: GeneralError,
+})
+```
+
+### Auth Guard Layout
+```tsx
+// routes/_authenticated/route.tsx
+function ProtectedRoute() {
+  const navigate = useNavigate()
+  const isAuth = isAuthenticated()
+
+  useEffect(() => {
+    if (!isAuth) navigate({ to: '/sign-in', replace: true })
+  }, [isAuth, navigate])
+
+  if (!isAuth) return <LoadingSpinner />
+  return <AuthenticatedLayout />
+}
+
+export const Route = createFileRoute('/_authenticated')({
+  component: ProtectedRoute,
+})
+```
+
+### Page Route
+```tsx
+// routes/_authenticated/leads/index.tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { LeadManagement } from '@/features/lead-management'
+
+export const Route = createFileRoute('/_authenticated/leads/')({
+  component: LeadManagement,
+})
+```
+
+### Dynamic Route with Params
+```tsx
+export const Route = createFileRoute('/_authenticated/leads/$leadId/edit')({
+  component: EditLeadPage,
+})
+
+// Access params:
+const { leadId } = Route.useParams()
+```
+
+## Zustand Auth Store
+```typescript
+// stores/auth-store.ts - same pattern in all frontend apps
+import { create } from 'zustand'
+import { getToken, setToken, getUser, setUser, clearAuth } from '@/lib/api'
+
+export const useAuthStore = create<AuthState>()((set, get) => ({
+  auth: {
+    user: getUser(),
+    accessToken: getToken() || '',
+    setUser: (user) => { setUser(user); set(state => ({ ...state, auth: { ...state.auth, user } })) },
+    setAccessToken: (token) => { setToken(token); set(state => ({ ...state, auth: { ...state.auth, accessToken: token } })) },
+    reset: () => { clearAuth(); set(state => ({ ...state, auth: { ...state.auth, user: null, accessToken: '' } })) },
+    isAuthenticated: () => !!get().auth.accessToken && !!get().auth.user,
+  },
+}))
 ```
 
 ## Form Pattern (react-hook-form + Zod)
@@ -76,3 +176,4 @@ const { register, handleSubmit, control } = useForm<FormData>({
 ```
 
 ## CRITICAL: Always update all 3 translation files when adding UI text.
+## CRITICAL: Never use fetch() directly in components -- always use apiRequest wrapper.

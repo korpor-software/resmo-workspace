@@ -9,7 +9,8 @@ alwaysApply: true
 - NEVER hardcode secrets, API keys, passwords, or tokens
 - NEVER commit `.env` files or credentials
 - NEVER log sensitive data (passwords, tokens, PII)
-- Always use environment variables via `process.env` or `import.meta.env`
+- Backend: use `env.PROPERTY` from `src/config/env.ts` (Zod-validated)
+- Frontend: use `import.meta.env.VITE_*` (Vite env)
 
 ## Authentication
 - NEVER bypass authentication middleware
@@ -21,7 +22,7 @@ alwaysApply: true
 - Always validate and sanitize user input with Zod
 - Always use parameterized queries (Mongoose handles this)
 - Never trust client-side data for authorization decisions
-- Always check user permissions in controllers
+- Always check user permissions in controllers via AuthPayload
 
 ## File Uploads
 - Validate file types server-side (not just extension)
@@ -30,13 +31,17 @@ alwaysApply: true
 
 ## What to NEVER Generate
 ```typescript
-// ❌ NEVER
+// NEVER
 const apiKey = "sk-1234567890"
 console.log("User password:", password)
 localStorage.setItem("password", pwd)
 
-// ✅ ALWAYS
-const apiKey = process.env.API_KEY
+// ALWAYS
+import { env } from '../config/env'  // backend
+const apiKey = env.API_KEY
+
+import.meta.env.VITE_API_URL  // frontend
+
 // Never log passwords
 localStorage.setItem("token", jwt) // Only tokens, never passwords
 ```

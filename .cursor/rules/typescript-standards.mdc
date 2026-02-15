@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Type Definitions
 ```typescript
-// ✅ Export interfaces from types/index.ts
+// Export interfaces from types/index.ts
 export interface Company {
   id: string
   _id?: string  // MongoDB ID
@@ -16,10 +16,10 @@ export interface Company {
   status: CompanyStatus
 }
 
-// ✅ Use type for unions/aliases
+// Use type for unions/aliases
 export type CompanyStatus = 'pending' | 'active' | 'inactive' | 'archived'
 
-// ✅ Form data types
+// Form data types (separate from entity types)
 export interface CreateCompanyFormData {
   name: string
   email: string
@@ -38,21 +38,61 @@ export interface UpdateCompanyFormData {
 - Constants: `SCREAMING_SNAKE_CASE` (e.g., `COUNTRIES`)
 - Files: `kebab-case.ts` (e.g., `company-management.tsx`)
 
-## Error Handling
+## NEVER Use `any`
 ```typescript
-// ✅ GOOD - Typed error handling
+// NEVER
+const data: any = response
+function handle(input: any) {}
+
+// ALWAYS type properly or use `unknown` and narrow
+const data: Company = response.data
+function handle(input: unknown) {
+  if (isCompany(input)) { /* now typed */ }
+}
+```
+
+## Error Handling
+
+### Frontend -- always show user feedback
+```typescript
 try {
-  const result = await apiCall()
-  if (!result.success) {
-    throw new Error(result.error)
-  }
+  const result = await api.create(data)
+  if (!result.success) throw new Error(result.error)
+  toast({ title: t('success.created') })
 } catch (error) {
-  console.error('Operation failed:', error)
-  toast({ title: t('error'), variant: 'destructive' })
+  toast({ title: t('error.createFailed'), variant: 'destructive' })
+}
+```
+
+### Backend -- throw typed errors (caught by error handler)
+```typescript
+// Throw specific error classes (from utils/errors.ts)
+if (!auth.companyId) {
+  throw new ForbiddenError('No company associated');
+}
+
+const item = await Model.findById(id);
+if (!item) throw new NotFoundError('Lead');
+
+// Zod validation errors are caught automatically
+const data = schema.parse(body); // throws ZodError -> 400
+```
+
+### NEVER swallow errors silently
+```typescript
+// NEVER
+try { await api.call() } catch (e) {}
+
+// ALWAYS handle or rethrow
+try {
+  await api.call()
+} catch (e) {
+  toast({ title: t('error.failed'), variant: 'destructive' })
 }
 ```
 
 ## Avoid
-- `any` type - use `unknown` and narrow
-- Non-null assertions `!` - use optional chaining
+- `any` type -- use `unknown` and narrow
+- Non-null assertions `!` -- use optional chaining `?.`
 - Implicit returns in complex functions
+- `as` type assertions unless absolutely necessary (prefer type guards)

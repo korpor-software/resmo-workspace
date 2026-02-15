@@ -9,62 +9,124 @@ alwaysApply: false
 ## Directory Structure
 ```
 src/
+├── config/         # env.ts (Zod-validated environment)
 ├── controllers/    # Request handlers (one per resource)
 ├── models/         # Mongoose schemas
-├── middleware/     # Auth, CORS, error handling
-├── routes/         # Route registration
+├── middleware/      # Auth, CORS, error handling
+├── routes/         # Route registration (routes/index.ts)
 ├── validators/     # Zod schemas
-└── utils/          # Helpers (jwt, email, response)
+└── utils/          # Helpers (jwt, response, request, errors)
 ```
 
-## Controller Pattern
+## Controller Pattern (ACTUAL)
 ```typescript
-export async function createResource(req: Request): Promise<Response> {
-  try {
-    // 1. Validate input
-    const body = await req.json()
-    const validation = createSchema.safeParse(body)
-    if (!validation.success) {
-      return errorResponse(validation.error.message, 400)
-    }
+import { Lead } from '../models';
+import { createLeadSchema } from '../validators';
+import {
+  parseBody,
+  successResponse,
+  createdResponse,
+  paginatedResponse,
+  getPaginationParams,
+  getSearchParams,
+  logAction,
+  ActionTypes,
+} from '../utils';
+import { ForbiddenError, NotFoundError } from '../utils/errors';
+import type { AuthPayload } from '../middleware/auth';
 
-    // 2. Check permissions (if needed)
-    const user = req.user // From auth middleware
-    if (!user) return errorResponse('Unauthorized', 401)
-
-    // 3. Business logic
-    const resource = await Model.create(validation.data)
-
-    // 4. Return response
-    return successResponse(resource, { message: 'Created' })
-  } catch (error) {
-    console.error('Create resource error:', error)
-    return errorResponse('Failed to create resource', 500)
+// CREATE - parse body, validate with Zod, create, return 201
+export async function createLead(req: Request, auth: AuthPayload): Promise<Response> {
+  if (!auth.companyId) {
+    throw new ForbiddenError('No company associated with this account');
   }
+
+  const body = await parseBody(req);
+  const data = createLeadSchema.parse(body); // Zod throws on failure
+
+  const lead = await Lead.create({
+    ...data,
+    companyId: auth.companyId,
+    agencyId: auth.agencyId || undefined,
+  });
+
+  return createdResponse(lead, 'Lead created successfully');
+}
+
+// LIST - paginated with role-based filtering
+export async function getLeads(req: Request, auth: AuthPayload): Promise<Response> {
+  const { page, limit, skip } = getPaginationParams(req);
+
+  const query: Record<string, unknown> = { companyId: auth.companyId };
+
+  // Role-based filtering
+  if (auth.role === 'admin' && auth.agencyId) {
+    query.agencyId = auth.agencyId;
+  }
+
+  const [items, total] = await Promise.all([
+    Lead.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Lead.countDocuments(query),
+  ]);
+
+  return paginatedResponse(items, page, limit, total);
+}
+
+// GET BY ID - with ownership check
+export async function getLeadById(req: Request, id: string, auth: AuthPayload): Promise<Response> {
+  const lead = await Lead.findOne({ _id: id, companyId: auth.companyId });
+  if (!lead) throw new NotFoundError('Lead');
+  return successResponse(lead, 'Lead retrieved successfully');
 }
 ```
 
 ## Response Helpers (ALWAYS use these)
 ```typescript
-return successResponse(data)                    // 200
-return successResponse(data, { total, page })   // 200 with meta
-return errorResponse('Not found', 404)          // Error with status
+successResponse(data, message?)           // 200
+createdResponse(data, message?)           // 201
+paginatedResponse(data[], page, limit, total) // 200 with meta
+errorResponse(message, status?)           // Error with status code
+noContentResponse()                       // 204
+```
+
+## Error Classes (throw these, caught by error handler)
+```typescript
+throw new ForbiddenError('No company associated');  // 403
+throw new NotFoundError('Lead');                     // 404
+throw new UnauthorizedError('Invalid token');        // 401
+throw new ValidationError('Invalid input');          // 400
+throw new BadRequestError('Missing field');          // 400
+throw new ConflictError('Already exists');           // 409
+// ZodError is caught automatically by error handler -> 400
+```
+
+## AuthPayload Interface
+```typescript
+interface AuthPayload {
+  userId: string;
+  email: string;
+  role: UserRole;          // 'superadmin' | 'company' | 'admin' | 'conseiller'
+  tokenType: `${UserRole}_token`;
+  companyId?: string;      // Present for company, admin, conseiller
+  agencyId?: string;       // Present for admin and conseiller
+}
 ```
 
 ## Mongoose Schema Pattern
 ```typescript
 const schema = new Schema({
   name: { type: String, required: true },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     enum: ['pending', 'active', 'inactive', 'archived'],
     default: 'pending'
   },
-  // Always include for soft-delete
-}, { timestamps: true })
+  companyId: { type: Schema.Types.ObjectId, ref: 'Company', required: true },
+}, { timestamps: true });
 
-// Add indexes for query performance
-schema.index({ status: 1, createdAt: -1 })
+schema.index({ companyId: 1, status: 1 });
+schema.index({ createdAt: -1 });
 ```
 
-## CRITICAL: Never delete records - set status to 'archived' instead.
+## CRITICAL: Never delete records -- set status to 'archived' instead.
+## CRITICAL: Access env via `import { env } from '../config/env'`, never `process.env` directly.

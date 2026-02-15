@@ -8,6 +8,12 @@ alwaysApply: true
 ## Project Overview
 Multi-tenant SaaS platform for real estate agencies with role-based access control.
 
+## Rule Priority (highest to lowest)
+1. Security rules (never bypass)
+2. Project-specific patterns (this file, commands, pre-commit)
+3. Tech stack conventions (backend/frontend/typescript patterns)
+4. General best practices
+
 ## Monorepo Structure (Bun Workspaces)
 ```
 apps/
@@ -15,8 +21,10 @@ apps/
 ├── superadmin/    # Platform administration (port 5173)
 ├── company/       # Company dashboard (port 5174)
 ├── admin/         # Agency admin dashboard (port 5175)
-└── conseiller/    # Real estate consultant dashboard (port 5176)
+└── consillier/    # Real estate consultant dashboard (port 5176)
 ```
+
+**Spelling note**: The directory is `consillier` but the role name in code/APIs is `conseiller`. Always use the correct one depending on context (filesystem vs API/code).
 
 ## Tech Stack
 - **Runtime**: Bun 1.1+ (NOT Node.js)
@@ -24,20 +32,24 @@ apps/
 - **Frontend**: React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS v4
 - **UI**: Radix UI primitives, shadcn/ui components
 - **i18n**: react-i18next (EN, FR, AR with RTL support)
-- **State**: Zustand for auth, React Query for server state
+- **State**: Zustand for auth (`stores/auth-store.ts`), React Query for server state
 - **Storage**: Cloudflare R2 for file uploads
 
 ## User Roles Hierarchy
 1. **Superadmin** - Platform owner, manages companies
 2. **Company** - Real estate company owner
-3. **Admin** - Agency administrator  
+3. **Admin** - Agency administrator
 4. **Conseiller** - Real estate consultant
+
+## Environment Config
+- **Backend**: Zod-validated env in `src/config/env.ts` -- access via `env.PROPERTY` (not `process.env` directly)
+- **Frontend**: Vite env via `import.meta.env.VITE_*`
 
 ## Critical Conventions
 - MongoDB `_id` maps to `id` in frontend types
 - API responses: `{ success: boolean, data?: T, error?: string, meta?: {...} }`
 - JWT tokens: `localStorage.getItem('{role}_token')`
-- Translations: `locales/{en,fr,ar}.json` - ALWAYS update all 3
+- Translations: `locales/{en,fr,ar}.json` -- ALWAYS update all 3
 
 ## File Naming
 - Components: `kebab-case.tsx` (e.g., `company-dialogs.tsx`)

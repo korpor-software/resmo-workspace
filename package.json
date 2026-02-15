@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "../backend",
+    "../admin",
+    "../company",
+    "../supervisor",
+    "../consillier"
   ],
   "scripts": {
     "dev": "bun run --parallel dev:all",

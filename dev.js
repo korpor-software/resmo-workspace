@@ -20,14 +20,24 @@ if (fs.existsSync(rootEnvPath)) {
   }
 }
 
-const mergedEnv = { ...process.env, ...envVars, FORCE_COLOR: '1' }
+const systemPath = process.env.PATH || ''
+const win32Paths = 'C:\\Windows\\System32;C:\\Windows;C:\\Windows\\System32\\Wbem'
+const mergedEnv = {
+  ...process.env,
+  ...envVars,
+  FORCE_COLOR: '1',
+  PATH: process.platform === 'win32'
+    ? `${win32Paths};${systemPath}`
+    : systemPath,
+}
 
 const apps = [
   { name: 'backend',    cwd: 'apps/backend',    cmd: 'bun', args: ['run', 'dev'], color: '\x1b[36m' },
   { name: 'admin',      cwd: 'apps/admin',      cmd: 'bun', args: ['run', 'dev'], color: '\x1b[32m' },
   { name: 'company',    cwd: 'apps/company',     cmd: 'bun', args: ['run', 'dev'], color: '\x1b[33m' },
   { name: 'superadmin', cwd: 'apps/superadmin',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[35m' },
-  { name: 'conseiller', cwd: 'apps/consillier',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[34m' },
+  { name: 'conseiller', cwd: 'apps/conseiller',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[34m' },
+  { name: 'landing',    cwd: 'apps/landing',    cmd: 'bun', args: ['run', 'dev'], color: '\x1b[37m' },
 ]
 
 const reset = '\x1b[0m'
@@ -65,14 +75,28 @@ for (const app of apps) {
   const cwd = path.resolve(__dirname, app.cwd)
   const prefix = `${app.color}[${app.name.padEnd(11)}]${reset}`
 
-  const child = spawn(app.cmd, app.args, {
+  const isWin = process.platform === 'win32'
+  const actualCmd = isWin ? 'C:\\Users\\JayJay\\.bun\\bin\\bun.exe' : app.cmd
+
+  console.log(`${prefix} spawning in: ${cwd}`)
+
+  if (!fs.existsSync(cwd)) {
+    console.log(`${prefix} ERROR: folder does not exist: ${cwd}`)
+    continue
+  }
+
+  const child = spawn(actualCmd, app.args, {
     cwd,
     stdio: ['ignore', 'pipe', 'pipe'],
-    shell: true,
+    shell: false,
     env: mergedEnv,
   })
 
   children.push(child)
+
+  child.on('error', (err) => {
+    console.log(`${prefix} SPAWN ERROR: ${err.message}`)
+  })
 
   child.stdout.on('data', (data) => {
     const lines = data.toString().split('\n').filter(Boolean)

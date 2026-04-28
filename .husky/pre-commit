@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+bun run --filter resmo-backend typecheck
+bun run --filter resmo-company typecheck

@@ -20,8 +20,8 @@ const config = {
     { repo: 'resmo-admin', folder: 'admin' },
     { repo: 'resmo-backend', folder: 'backend' },
     { repo: 'resmo-company', folder: 'company' },
-    { repo: 'resmo-superadmin', folder: 'superadmin' },
-    { repo: 'resmo-conseiller', folder: 'conseiller' },
+    { repo: 'resmo-supervisor', folder: 'superadmin' },
+    { repo: 'resmo-consillier', folder: 'conseiller' },
   ]
 };
 

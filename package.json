@@ -6,7 +6,7 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "bun run --parallel dev:all",
+    "dev": "node dev.js",
     "dev:all": "bun run --filter '*' dev",
     "dev:backend": "bun run --filter resmo-backend dev",
     "dev:admin": "bun run --filter resmo-admin dev",
@@ -24,8 +24,8 @@
     "format": "bun run --filter '*' format",
     "format:check": "bun run --filter '*' format:check",
     "clean": "rimraf node_modules apps/*/node_modules",
-    "install:all": "bun install",
-    "prepare": "husky"
+    "kill": "node -e \"const{execSync}=require('child_process');[3000,5173,5174,5175,5176].forEach(p=>{try{const r=execSync('netstat -ano',{encoding:'utf8'}).split('\\n').filter(l=>l.includes('LISTENING')&&l.includes(':'+p));r.forEach(l=>{const pid=l.trim().split(/\\s+/).pop();if(pid&&pid!=='0')execSync('taskkill /pid '+pid+' /f /t',{stdio:'ignore'})});if(r.length)console.log('Killed port '+p)}catch(_){}})\"",
+    "install:all": "bun install"
   },
   "devDependencies": {
     "rimraf": "^6.0.1"

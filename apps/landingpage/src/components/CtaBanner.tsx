@@ -1,28 +1,29 @@
 import { ModalId } from '../types';
-import { APP_URLS } from '../config';
+import { useLandingLocale } from '../context/locale-provider';
 
 interface CtaBannerProps {
   onOpenModal: (id: ModalId) => void;
   onOpenChooseRoleDirect: () => void;
 }
 
-export default function CtaBanner({ onOpenModal: _onOpenModal, onOpenChooseRoleDirect }: CtaBannerProps) {
+export default function CtaBanner({ onOpenModal, onOpenChooseRoleDirect }: CtaBannerProps) {
+  const { t } = useLandingLocale();
   return (
     <div className="cta-banner reveal">
       <div>
-        <h2>Ready to transform your real estate operations?</h2>
-        <p>Join thousands of agencies already using RESMO to centralize, automate, and grow their business.</p>
+        <h2>{t('cta.title')}</h2>
+        <p>{t('cta.subtitle')}</p>
       </div>
       <div className="cta-banner-btns">
-        <button className="btn gold" onClick={() => (window.location.href = APP_URLS.company + '/sign-up')}>
-          Start as a Company
+        <button className="btn gold" onClick={() => onOpenModal('companySignup')}>
+          {t('cta.company')}
         </button>
         <button
           className="btn ghost"
           style={{ background: 'rgba(255,255,255,.15)', color: '#fff' }}
           onClick={onOpenChooseRoleDirect}
         >
-          Join as Advisor/Manager
+          {t('cta.advisor')}
         </button>
       </div>
     </div>

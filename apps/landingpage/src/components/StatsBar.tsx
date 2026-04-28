@@ -1,13 +1,15 @@
 import { StatItem } from '../types';
-
-const STATS: StatItem[] = [
-  { value: '12k+', label: 'Registered Companies' },
-  { value: '98%', label: 'Client satisfaction' },
-  { value: '18k', label: 'AI Tasks Generated' },
-  { value: '€2.5M+', label: 'Transactions Managed' },
-];
+import { useLandingLocale } from '../context/locale-provider';
 
 export default function StatsBar() {
+  const { t } = useLandingLocale();
+  const STATS: StatItem[] = [
+    { value: '12k+', label: t('stats.registeredCompanies') },
+    { value: '98%', label: t('stats.satisfaction') },
+    { value: '18k', label: t('stats.tasks') },
+    { value: '€2.5M+', label: t('stats.transactions') },
+  ];
+
   return (
     <div className="stats-bar reveal">
       {STATS.map((stat, i) => (

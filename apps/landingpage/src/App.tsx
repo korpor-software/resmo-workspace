@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useModal } from './hooks/useModal';
 import { ModalId } from './types';
+import { LocaleProvider } from './context/locale-provider';
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -22,7 +23,20 @@ import CompanySignupModal from './components/modals/CompanySignupModal';
 import AdvisorSignupModal from './components/modals/AdvisorSignupModal';
 
 export default function App() {
+  return (
+    <LocaleProvider>
+      <AppShell />
+    </LocaleProvider>
+  );
+}
+
+function AppShell() {
   const { openModal, closeModal, switchModal, isOpen } = useModal();
+  const [isNightMode, setIsNightMode] = useState(false);
+
+  const toggleNightMode = () => {
+    setIsNightMode((prev) => !prev);
+  };
 
   // Track whether chooseRole was opened directly (no back button)
   // or via getStarted (show back button)
@@ -69,6 +83,25 @@ export default function App() {
     window.scrollTo(0, 0);
   }, []);
 
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem('resmo-landing-theme');
+    if (savedTheme === 'night') {
+      setIsNightMode(true);
+      return;
+    }
+    if (savedTheme === 'day') {
+      setIsNightMode(false);
+      return;
+    }
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setIsNightMode(prefersDark);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isNightMode ? 'night' : 'day');
+    window.localStorage.setItem('resmo-landing-theme', isNightMode ? 'night' : 'day');
+  }, [isNightMode]);
+
   // Determine if chooseRole was reached from getStarted
   const chooseRoleShowBack = isOpen('chooseRole') && !isOpen('getStarted');
 
@@ -82,7 +115,7 @@ export default function App() {
       </div>
 
       {/* Navigation */}
-      <Navbar onOpenModal={openModal} />
+      <Navbar onOpenModal={openModal} isNightMode={isNightMode} onToggleNightMode={toggleNightMode} />
 
       {/* Main content */}
       <main>
@@ -136,7 +169,6 @@ export default function App() {
       <CompanySignupModal
         isOpen={isOpen('companySignup')}
         onClose={() => closeModal('companySignup')}
-        onSwitch={switchModal}
       />
       <AdvisorSignupModal
         isOpen={isOpen('advisorSignup')}

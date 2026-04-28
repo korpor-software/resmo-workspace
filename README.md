@@ -62,6 +62,7 @@ Resmo/
 | `bun run dev:superadmin` | Superadmin only |
 | `bun run dev:conseiller` | Conseiller only |
 | `bun run build` | Build all |
+| `bun run train:price-model` | Train backend price model |
 | `bun run lint` | Lint all |
 
 ## Working with Apps

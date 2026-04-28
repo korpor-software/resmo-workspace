@@ -19,11 +19,13 @@
     "build:company": "bun run --filter resmo-company build",
     "build:superadmin": "bun run --filter resmo-superadmin build",
     "build:conseiller": "bun run --filter resmo-conseiller build",
+    "train:price-model": "bun run --filter resmo-backend train:price-model",
     "lint": "bun run --filter '*' lint",
     "format": "bun run --filter '*' format",
     "format:check": "bun run --filter '*' format:check",
     "clean": "rimraf node_modules apps/*/node_modules",
-    "install:all": "bun install"
+    "install:all": "bun install",
+    "prepare": "husky"
   },
   "devDependencies": {
     "rimraf": "^6.0.1"
@@ -31,5 +33,8 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "bun@1.1.0"
+  "packageManager": "bun@1.1.0",
+  "dependencies": {
+    "currency-codes": "2.2.0"
+  }
 }

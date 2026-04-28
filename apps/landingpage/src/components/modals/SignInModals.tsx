@@ -2,6 +2,7 @@ import Modal from './Modal';
 import PasswordField from './PasswordField';
 import { ModalId } from '../../types';
 import { APP_URLS } from '../../config';
+import { useLandingLocale } from '../../context/locale-provider';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -11,11 +12,12 @@ interface SignInModalProps {
 
 // ── Supervisor ──────────────────────────────────────────────────
 export function SignInSupervisorModal({ isOpen, onClose }: SignInModalProps) {
+  const { t } = useLandingLocale();
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="modal-icon navy" style={{ margin: '0 auto 18px' }}>🛡️</div>
-      <h2>Supervisor Sign In</h2>
-      <p className="modal-sub">Access the global management dashboard.</p>
+      <h2>{t('modal.signInSupervisorTitle')}</h2>
+      <p className="modal-sub">{t('modal.signInSupervisorSubtitle')}</p>
       <div className="field">
         <label>Email</label>
         <div className="input-icon-wrap">
@@ -28,10 +30,10 @@ export function SignInSupervisorModal({ isOpen, onClose }: SignInModalProps) {
         className="form-submit navy-fill"
         onClick={() => window.location.href = APP_URLS.superadmin + '/sign-in'}
       >
-        Sign In as Supervisor
+        {t('modal.signInSupervisorButton')}
       </button>
       <div className="modal-footer">
-        Not a supervisor? <a onClick={onClose}>Go back</a>
+        {t('modal.newHere')} <a onClick={onClose}>{t('modal.goBack')}</a>
       </div>
     </Modal>
   );
@@ -39,16 +41,17 @@ export function SignInSupervisorModal({ isOpen, onClose }: SignInModalProps) {
 
 // ── Company ─────────────────────────────────────────────────────
 export function SignInCompanyModal({ isOpen, onClose, onSwitch }: SignInModalProps) {
+  const { t } = useLandingLocale();
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="modal-icon navy" style={{ margin: '0 auto 18px' }}>🏢</div>
-      <h2>Company Sign In</h2>
-      <p className="modal-sub">Access your agency's management portal.</p>
+      <h2>{t('modal.signInCompanyTitle')}</h2>
+      <p className="modal-sub">{t('modal.signInCompanySubtitle')}</p>
       <div className="field">
         <label>Company Email</label>
         <div className="input-icon-wrap">
           <span className="ico">✉</span>
-          <input type="email" placeholder="company@agency.com" />
+          <input type="email" placeholder="company@business.com" />
         </div>
       </div>
       <PasswordField />
@@ -56,11 +59,11 @@ export function SignInCompanyModal({ isOpen, onClose, onSwitch }: SignInModalPro
         className="form-submit navy-fill"
         onClick={() => window.location.href = APP_URLS.company + '/sign-in'}
       >
-        Sign In as Company
+        {t('modal.signInCompanyButton')}
       </button>
       <div className="modal-footer">
-        New here?{' '}
-        <a onClick={() => onSwitch('signinCompany', 'companySignup')}>Create a company account</a>
+        {t('modal.newHere')}{' '}
+        <a onClick={() => onSwitch('signinCompany', 'companySignup')}>{t('modal.createCompany')}</a>
       </div>
     </Modal>
   );
@@ -68,11 +71,12 @@ export function SignInCompanyModal({ isOpen, onClose, onSwitch }: SignInModalPro
 
 // ── Advisor ──────────────────────────────────────────────────────
 export function SignInAdvisorModal({ isOpen, onClose, onSwitch }: SignInModalProps) {
+  const { t } = useLandingLocale();
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="modal-icon gold" style={{ margin: '0 auto 18px' }}>👤</div>
-      <h2>Advisor Sign In</h2>
-      <p className="modal-sub">Access your personal workspace.</p>
+      <h2>{t('modal.signInAdvisorTitle')}</h2>
+      <p className="modal-sub">{t('modal.signInAdvisorSubtitle')}</p>
       <div className="field">
         <label>Email</label>
         <div className="input-icon-wrap">
@@ -85,11 +89,11 @@ export function SignInAdvisorModal({ isOpen, onClose, onSwitch }: SignInModalPro
         className="form-submit gold-fill"
         onClick={() => window.location.href = APP_URLS.conseiller + '/sign-in'}
       >
-        Sign In
+        {t('modal.signInAdvisorButton')}
       </button>
       <div className="modal-footer">
-        Don't have access yet?{' '}
-        <a onClick={() => onSwitch('signinAdvisor', 'advisorSignup')}>Request access</a>
+        {t('modal.dontHaveAccess')}{' '}
+        <a onClick={() => onSwitch('signinAdvisor', 'advisorSignup')}>{t('modal.requestAccess')}</a>
       </div>
     </Modal>
   );
@@ -97,11 +101,12 @@ export function SignInAdvisorModal({ isOpen, onClose, onSwitch }: SignInModalPro
 
 // ── Financial Manager ────────────────────────────────────────────
 export function SignInFinancialManagerModal({ isOpen, onClose, onSwitch }: SignInModalProps) {
+  const { t } = useLandingLocale();
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="modal-icon gold" style={{ margin: '0 auto 18px' }}>👤</div>
-      <h2>Financial Manager Sign In</h2>
-      <p className="modal-sub">Access your personal workspace.</p>
+      <h2>{t('modal.signInFinancialTitle')}</h2>
+      <p className="modal-sub">{t('modal.signInFinancialSubtitle')}</p>
       <div className="field">
         <label>Email</label>
         <div className="input-icon-wrap">
@@ -114,11 +119,11 @@ export function SignInFinancialManagerModal({ isOpen, onClose, onSwitch }: SignI
         className="form-submit gold-fill"
         onClick={() => window.location.href = APP_URLS.admin + '/sign-in'}
       >
-        Sign In
+        {t('modal.signInFinancialButton')}
       </button>
       <div className="modal-footer">
-        Don't have access yet?{' '}
-        <a onClick={() => onSwitch('signinFinancialManager', 'advisorSignup')}>Request access</a>
+        {t('modal.dontHaveAccess')}{' '}
+        <a onClick={() => onSwitch('signinFinancialManager', 'advisorSignup')}>{t('modal.requestAccess')}</a>
       </div>
     </Modal>
   );

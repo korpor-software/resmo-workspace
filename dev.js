@@ -27,7 +27,7 @@ const apps = [
   { name: 'admin',      cwd: 'apps/admin',      cmd: 'bun', args: ['run', 'dev'], color: '\x1b[32m' },
   { name: 'company',    cwd: 'apps/company',     cmd: 'bun', args: ['run', 'dev'], color: '\x1b[33m' },
   { name: 'superadmin', cwd: 'apps/superadmin',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[35m' },
-  { name: 'conseiller', cwd: 'apps/consillier',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[34m' },
+  { name: 'conseiller', cwd: 'apps/conseiller',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[34m' },
 ]
 
 const reset = '\x1b[0m'
@@ -68,7 +68,7 @@ for (const app of apps) {
   const child = spawn(app.cmd, app.args, {
     cwd,
     stdio: ['ignore', 'pipe', 'pipe'],
-    shell: true,
+    shell: false,
     env: mergedEnv,
   })
 
@@ -92,5 +92,9 @@ for (const app of apps) {
     if (!shuttingDown) {
       console.log(`${prefix} exited with code ${code}`)
     }
+  })
+
+  child.on('error', (error) => {
+    console.log(`${prefix} failed to start: ${error.message}`)
   })
 }

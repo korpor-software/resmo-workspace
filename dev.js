@@ -28,6 +28,7 @@ const apps = [
   { name: 'company',    cwd: 'apps/company',     cmd: 'bun', args: ['run', 'dev'], color: '\x1b[33m' },
   { name: 'superadmin', cwd: 'apps/superadmin',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[35m' },
   { name: 'conseiller', cwd: 'apps/conseiller',  cmd: 'bun', args: ['run', 'dev'], color: '\x1b[34m' },
+  { name: 'landingpage',cwd: 'apps/landingpage', cmd: 'bun', args: ['run', 'dev'], color: '\x1b[36m' },
 ]
 
 const reset = '\x1b[0m'
